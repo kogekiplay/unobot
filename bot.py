@@ -58,8 +58,7 @@ def notify_me(update: Update, context: CallbackContext):
     if update.message.chat.type == 'private':
         send_async(bot,
                    chat_id,
-                   text=_("Send this command in a group to be notified "
-                          "when a new game is started there."))
+                   text=_("在群组中发送该指令，以在新游戏开始时通知您。"))
     else:
         try:
             gm.remind_dict[chat_id].add(update.message.from_user.id)
@@ -81,7 +80,7 @@ def new_game(update: Update, context: CallbackContext):
             for user in gm.remind_dict[update.message.chat_id]:
                 send_async(bot,
                            user,
-                           text=_("A new game has been started in {title}").format(
+                           text=_("新游戏已在 {title} 开始").format(
                                 title=update.message.chat.title))
 
             del gm.remind_dict[update.message.chat_id]
@@ -91,8 +90,7 @@ def new_game(update: Update, context: CallbackContext):
         game.owner.append(update.message.from_user.id)
         game.mode = DEFAULT_GAMEMODE
         send_async(context.bot, chat_id,
-                   text=_("Created a new game! Join the game with /join "
-                          "and start the game with /start"))
+                   text=_("创建新游戏成功！请使用 /join 加入游戏，然后使用 /start 开始游戏"))
 
 
 @user_locale
@@ -108,7 +106,7 @@ def kill_game(update: Update, context: CallbackContext):
 
     if not games:
             send_async(context.bot, chat.id,
-                       text=_("There is no running game in this chat."))
+                       text=_("这个群中并没有正在运行的游戏。"))
             return
 
     game = games[-1]
@@ -117,17 +115,16 @@ def kill_game(update: Update, context: CallbackContext):
 
         try:
             gm.end_game(chat, user)
-            send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate))
+            send_async(context.bot, chat.id, text=__("游戏结束！", multi=game.translate))
 
         except NoGameInChatError:
             send_async(context.bot, chat.id,
-                       text=_("The game is not started yet. "
-                              "Join the game with /join and start the game with /start"),
+                       text=_("游戏尚未开始。请使用 /join 加入游戏，然后使用 /start 开始游戏"),
                        reply_to_message_id=update.message.message_id)
 
     else:
         send_async(context.bot, chat.id,
-                  text=_("Only the game creator ({name}) and admin can do that.")
+                  text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                   .format(name=game.starter.first_name),
                   reply_to_message_id=update.message.message_id)
 
@@ -144,29 +141,26 @@ def join_game(update: Update, context: CallbackContext):
         gm.join_game(update.message.from_user, chat)
 
     except LobbyClosedError:
-            send_async(context.bot, chat.id, text=_("The lobby is closed"))
+            send_async(context.bot, chat.id, text=_("已禁止中途加入游戏"))
 
     except NoGameInChatError:
         send_async(context.bot, chat.id,
-                   text=_("No game is running at the moment. "
-                          "Create a new game with /new"),
+                   text=_("这个群并没有运行中的游戏。请使用 /new 创建新游戏"),
                    reply_to_message_id=update.message.message_id)
 
     except AlreadyJoinedError:
         send_async(context.bot, chat.id,
-                   text=_("You already joined the game. Start the game "
-                          "with /start"),
+                   text=_("您已经加入了游戏。请使用 /start 开始游戏"),
                    reply_to_message_id=update.message.message_id)
 
     except DeckEmptyError:
         send_async(context.bot, chat.id,
-                   text=_("There are not enough cards left in the deck for "
-                          "new players to join."),
+                   text=_("牌堆中已经没有足够给新加入玩家的牌了。"),
                    reply_to_message_id=update.message.message_id)
 
     else:
         send_async(context.bot, chat.id,
-                   text=_("Joined the game"),
+                   text=_("游戏加入成功"),
                    reply_to_message_id=update.message.message_id)
 
 
@@ -179,8 +173,7 @@ def leave_game(update: Update, context: CallbackContext):
     player = gm.player_for_user_in_chat(user, chat)
 
     if player is None:
-        send_async(context.bot, chat.id, text=_("You are not playing in a game in "
-                                        "this group."),
+        send_async(context.bot, chat.id, text=_("您在这个群中并没有参加游戏。"),
                    reply_to_message_id=update.message.message_id)
         return
 
@@ -191,24 +184,23 @@ def leave_game(update: Update, context: CallbackContext):
         gm.leave_game(user, chat)
 
     except NoGameInChatError:
-        send_async(context.bot, chat.id, text=_("You are not playing in a game in "
-                                        "this group."),
+        send_async(context.bot, chat.id, text=_("您在这个群中并没有参加游戏。"),
                    reply_to_message_id=update.message.message_id)
 
     except NotEnoughPlayersError:
         gm.end_game(chat, user)
-        send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate))
+        send_async(context.bot, chat.id, text=__("游戏结束！", multi=game.translate))
 
     else:
         if game.started:
             send_async(context.bot, chat.id,
-                       text=__("Okay. Next Player: {name}",
+                       text=__("好的，轮到： {name}",
                                multi=game.translate).format(
                            name=display_name(game.current_player.user)),
                        reply_to_message_id=update.message.message_id)
         else:
             send_async(context.bot, chat.id,
-                       text=__("{name} left the game before it started.",
+                       text=__("{name} 在游戏开始前就离开游戏了。",
                                multi=game.translate).format(
                            name=display_name(user)),
                        reply_to_message_id=update.message.message_id)
@@ -230,15 +222,13 @@ def kick_player(update: Update, context: CallbackContext):
 
     except (KeyError, IndexError):
             send_async(context.bot, chat.id,
-                   text=_("No game is running at the moment. "
-                          "Create a new game with /new"),
+                   text=_("这个群并没有运行中的游戏。请使用 /new 创建新游戏"),
                    reply_to_message_id=update.message.message_id)
             return
 
     if not game.started:
         send_async(context.bot, chat.id,
-                   text=_("The game is not started yet. "
-                          "Join the game with /join and start the game with /start"),
+                   text=_("游戏尚未开始。请使用 /join 加入游戏，然后使用 /start 开始游戏"),
                    reply_to_message_id=update.message.message_id)
         return
 
@@ -251,35 +241,35 @@ def kick_player(update: Update, context: CallbackContext):
                 gm.leave_game(kicked, chat)
 
             except NoGameInChatError:
-                send_async(context.bot, chat.id, text=_("Player {name} is not found in the current game.".format(name=display_name(kicked))),
+                send_async(context.bot, chat.id, text=_("未在当前游戏中找到{name}玩家。".format(name=display_name(kicked))),
                                 reply_to_message_id=update.message.message_id)
                 return
 
             except NotEnoughPlayersError:
                 gm.end_game(chat, user)
                 send_async(context.bot, chat.id,
-                                text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))))
-                send_async(context.bot, chat.id, text=__("Game ended!", multi=game.translate))
+                                text=_("{0} 已被 {1} 踢出游戏".format(display_name(kicked), display_name(user))))
+                send_async(context.bot, chat.id, text=__("游戏结束！", multi=game.translate))
                 return
 
             send_async(context.bot, chat.id,
-                            text=_("{0} was kicked by {1}".format(display_name(kicked), display_name(user))))
+                            text=_("{0} 已被 {1} 踢出游戏".format(display_name(kicked), display_name(user))))
 
         else:
             send_async(context.bot, chat.id,
-                text=_("Please reply to the person you want to kick and type /kick again."),
+                text=_("请回复要踢出的人，并再次输入 /kick 。"),
                 reply_to_message_id=update.message.message_id)
             return
 
         send_async(context.bot, chat.id,
-                   text=__("Okay. Next Player: {name}",
+                   text=__("好的，轮到： {name}",
                            multi=game.translate).format(
                        name=display_name(game.current_player.user)),
                    reply_to_message_id=update.message.message_id)
 
     else:
         send_async(context.bot, chat.id,
-                  text=_("Only the game creator ({name}) and admin can do that.")
+                  text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                   .format(name=game.starter.first_name),
                   reply_to_message_id=update.message.message_id)
 
@@ -297,22 +287,21 @@ def select_game(update: Update, context: CallbackContext):
     else:
         send_async(bot,
                    update.callback_query.message.chat_id,
-                   text=_("Game not found."))
+                   text=_("游戏未找到。"))
         return
 
     def selected():
-        back = [[InlineKeyboardButton(text=_("Back to last group"),
+        back = [[InlineKeyboardButton(text=_("返回上一个群"),
                                       switch_inline_query='')]]
         context.bot.answerCallbackQuery(update.callback_query.id,
-                                text=_("Please switch to the group you selected!"),
+                                text=_("请切换到您选择的群！"),
                                 show_alert=False,
                                 timeout=TIMEOUT)
 
         context.bot.editMessageText(chat_id=update.callback_query.message.chat_id,
                             message_id=update.callback_query.message.message_id,
-                            text=_("Selected group: {group}\n"
-                                   "<b>Make sure that you switch to the correct "
-                                   "group!</b>").format(
+                            text=_("选择群： {group}\n"
+                                   "<b>请确保您已切换到正确的群！</b>").format(
                                 group=gm.userid_current[user_id].game.chat.title),
                             reply_markup=InlineKeyboardMarkup(back),
                             parse_mode=ParseMode.HTML,
@@ -337,10 +326,10 @@ def status_update(update: Update, context: CallbackContext):
             pass
         except NotEnoughPlayersError:
             gm.end_game(chat, user)
-            send_async(context.bot, chat.id, text=__("Game ended!",
+            send_async(context.bot, chat.id, text=__("游戏结束！",
                                              multi=game.translate))
         else:
-            send_async(context.bot, chat.id, text=__("Removing {name} from the game",
+            send_async(context.bot, chat.id, text=__("已成功将 {name} 移出游戏",
                                              multi=game.translate)
                        .format(name=display_name(user)))
 
@@ -357,17 +346,15 @@ def start_game(update: Update, context: CallbackContext):
             game = gm.chatid_games[chat.id][-1]
         except (KeyError, IndexError):
             send_async(context.bot, chat.id,
-                       text=_("There is no game running in this chat. Create "
-                              "a new one with /new"))
+                       text=_("这个群并没有运行中的游戏。请使用 /new 创建新游戏"))
             return
 
         if game.started:
-            send_async(context.bot, chat.id, text=_("The game has already started"))
+            send_async(context.bot, chat.id, text=_("游戏已经开始"))
 
         elif len(game.players) < MIN_PLAYERS:
             send_async(context.bot, chat.id,
-                       text=__("At least {minplayers} players must /join the game "
-                              "before you can start it").format(minplayers=MIN_PLAYERS))
+                       text=__("至少需要 {minplayers} 个人 /join 加入游戏，才能开始游戏").format(minplayers=MIN_PLAYERS))
 
         else:
             # Starting a game
@@ -375,11 +362,11 @@ def start_game(update: Update, context: CallbackContext):
 
             for player in game.players:
                 player.draw_first_hand()
-            choice = [[InlineKeyboardButton(text=_("Make your choice!"), switch_inline_query_current_chat='')]]
+            choice = [[InlineKeyboardButton(text=_("点击查看手牌！"), switch_inline_query_current_chat='')]]
             first_message = (
-                __("First player: {name}\n"
-                   "Use /close to stop people from joining the game.\n"
-                   "Enable multi-translations with /enable_translations",
+                __("第一个出牌的玩家： {name}\n"
+                   "可使用 /close 阻止其他人中途加入游戏。\n"
+                   "使用 /enable_translations 启动游戏翻译功能",
                    multi=game.translate)
                 .format(name=display_name(game.current_player.user)))
 
@@ -414,7 +401,7 @@ def start_game(update: Update, context: CallbackContext):
             )
 
         send_async(context.bot, update.message.chat_id,
-                   text=_('Please select the group you want to play in.'),
+                   text=_('请选择您要参加游戏的群。'),
                    reply_markup=InlineKeyboardMarkup(groups))
 
     else:
@@ -430,20 +417,19 @@ def close_game(update: Update, context: CallbackContext):
 
     if not games:
         send_async(context.bot, chat.id,
-                   text=_("There is no running game in this chat."))
+                   text=_("这个群中并没有正在运行的游戏。"))
         return
 
     game = games[-1]
 
     if user.id in game.owner:
         game.open = False
-        send_async(context.bot, chat.id, text=_("Closed the lobby. "
-                                        "No more players can join this game."))
+        send_async(context.bot, chat.id, text=_("游戏已设置成不允许中途加入，玩家将不允许加入游戏。"))
         return
 
     else:
         send_async(context.bot, chat.id,
-                   text=_("Only the game creator ({name}) and admin can do that.")
+                   text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                    .format(name=game.starter.first_name),
                    reply_to_message_id=update.message.message_id)
         return
@@ -458,19 +444,18 @@ def open_game(update: Update, context: CallbackContext):
 
     if not games:
         send_async(context.bot, chat.id,
-                   text=_("There is no running game in this chat."))
+                   text=_("这个群中并没有正在运行的游戏。"))
         return
 
     game = games[-1]
 
     if user.id in game.owner:
         game.open = True
-        send_async(context.bot, chat.id, text=_("Opened the lobby. "
-                                        "New players may /join the game."))
+        send_async(context.bot, chat.id, text=_("游戏已设置成允许中途加入，新玩家现在可以使用 /join 加入游戏。"))
         return
     else:
         send_async(context.bot, chat.id,
-                   text=_("Only the game creator ({name}) and admin can do that.")
+                   text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                    .format(name=game.starter.first_name),
                    reply_to_message_id=update.message.message_id)
         return
@@ -485,20 +470,19 @@ def enable_translations(update: Update, context: CallbackContext):
 
     if not games:
         send_async(context.bot, chat.id,
-                   text=_("There is no running game in this chat."))
+                   text=_("这个群中并没有正在运行的游戏。"))
         return
 
     game = games[-1]
 
     if user.id in game.owner:
         game.translate = True
-        send_async(context.bot, chat.id, text=_("Enabled multi-translations. "
-                                        "Disable with /disable_translations"))
+        send_async(context.bot, chat.id, text=_("游戏翻译已启用，使用 /disable_translations 可以停用该功能"))
         return
 
     else:
         send_async(context.bot, chat.id,
-                   text=_("Only the game creator ({name}) and admin can do that.")
+                   text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                    .format(name=game.starter.first_name),
                    reply_to_message_id=update.message.message_id)
         return
@@ -513,21 +497,19 @@ def disable_translations(update: Update, context: CallbackContext):
 
     if not games:
         send_async(context.bot, chat.id,
-                   text=_("There is no running game in this chat."))
+                   text=_("这个群中并没有正在运行的游戏。"))
         return
 
     game = games[-1]
 
     if user.id in game.owner:
         game.translate = False
-        send_async(context.bot, chat.id, text=_("Disabled multi-translations. "
-                                        "Enable them again with "
-                                        "/enable_translations"))
+        send_async(context.bot, chat.id, text=_("游戏翻译已停用，使用 /enable_translations 可以启用该功能"))
         return
 
     else:
         send_async(context.bot, chat.id,
-                   text=_("Only the game creator ({name}) and admin can do that.")
+                   text=_("游戏结束只有游戏创建者 ({name}) 和管理员才能执行该命令。！")
                    .format(name=game.starter.first_name),
                    reply_to_message_id=update.message.message_id)
         return
@@ -543,7 +525,7 @@ def skip_player(update: Update, context: CallbackContext):
     player = gm.player_for_user_in_chat(user, chat)
     if not player:
         send_async(context.bot, chat.id,
-                   text=_("You are not playing in a game in this chat."))
+                   text=_("您在这个群中并没有参加游戏。"))
         return
 
     game = player.game
@@ -558,8 +540,8 @@ def skip_player(update: Update, context: CallbackContext):
     if delta < skipped_player.waiting_time and player != skipped_player:
         n = skipped_player.waiting_time - delta
         send_async(context.bot, chat.id,
-                   text=_("Please wait {time} second",
-                          "Please wait {time} seconds",
+                   text=_("请等待 {time} 秒",
+                          "请等待 {time} 秒",
                           n)
                    .format(time=n),
                    reply_to_message_id=update.message.message_id)
@@ -635,7 +617,7 @@ def reply_to_query(update: Update, context: CallbackContext):
             result.id += ':%d' % player.anti_cheat
 
         if players and game and len(players) > 1:
-            switch = _('Current game: {game}').format(game=game.chat.title)
+            switch = _('当前游戏： {game}').format(game=game.chat.title)
 
     answer_async(context.bot, update.inline_query.id, results, cache_time=0,
                  switch_pm_text=switch, switch_pm_parameter='select')
@@ -669,14 +651,14 @@ def process_result(update: Update, context: CallbackContext):
         # First 5 characters are 'mode_', the rest is the gamemode.
         mode = result_id[5:]
         game.set_mode(mode)
-        logger.info("Gamemode changed to {mode}".format(mode = mode))
-        send_async(context.bot, chat.id, text=__("Gamemode changed to {mode}".format(mode = mode)))
+        logger.info("游戏模式已切换为 {mode}".format(mode = mode))
+        send_async(context.bot, chat.id, text=__("游戏模式已切换为 {mode}".format(mode = mode)))
         return
     elif len(result_id) == 36:  # UUID result
         return
     elif int(anti_cheat) != last_anti_cheat:
         send_async(context.bot, chat.id,
-                   text=__("Cheat attempt by {name}", multi=game.translate)
+                   text=__("{name} 试图作弊", multi=game.translate)
                    .format(name=display_name(player.user)))
         return
     elif result_id == 'call_bluff':
@@ -695,9 +677,9 @@ def process_result(update: Update, context: CallbackContext):
 
     if game_is_running(game):
         nextplayer_message = (
-            __("Next player: {name}", multi=game.translate)
+            __("轮到： {name}", multi=game.translate)
             .format(name=display_name(game.current_player.user)))
-        choice = [[InlineKeyboardButton(text=_("Make your choice!"), switch_inline_query_current_chat='')]]
+        choice = [[InlineKeyboardButton(text=_("点击查看手牌！"), switch_inline_query_current_chat='')]]
         send_async(context.bot, chat.id,
                         text=nextplayer_message,
                         reply_markup=InlineKeyboardMarkup(choice))
@@ -711,8 +693,7 @@ def reset_waiting_time(bot, player):
     if player.waiting_time < WAITING_TIME:
         player.waiting_time = WAITING_TIME
         send_async(bot, chat.id,
-                   text=__("Waiting time for {name} has been reset to {time} "
-                           "seconds", multi=player.game.translate)
+                   text=__("{name} 的等待时间已经重置为 {time} 秒", multi=player.game.translate)
                    .format(name=display_name(player.user), time=WAITING_TIME))
 
 

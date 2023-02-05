@@ -36,7 +36,7 @@ def add_choose_color(results, game):
         results.append(
             InlineQueryResultArticle(
                 id=color,
-                title=_("Choose Color"),
+                title=_("选择颜色"),
                 description=display_color(color),
                 input_message_content=
                 InputTextMessageContent(display_color_group(color, game))
@@ -50,8 +50,8 @@ def add_other_cards(player, results, game):
     results.append(
         InlineQueryResultArticle(
             "hand",
-            title=_("Card (tap for game state):",
-                    "Cards (tap for game state):",
+            title=_("手牌 (点击查看游戏状况)：",
+                    "手牌 (点击查看游戏状况)：",
                     len(player.cards)),
             description=', '.join([repr(card) for card in player.cards]),
             input_message_content=game_info(game)
@@ -61,8 +61,8 @@ def add_other_cards(player, results, game):
 
 def player_list(game):
     """Generate list of player strings"""
-    return [_("{name} ({number} card)",
-              "{name} ({number} cards)",
+    return [_("{name} ({number} 张牌)",
+              "{name} ({number} 张牌)",
               len(player.cards))
             .format(name=player.user.first_name, number=len(player.cards))
             for player in game.players]
@@ -73,11 +73,9 @@ def add_no_game(results):
     results.append(
         InlineQueryResultArticle(
             "nogame",
-            title=_("You are not playing"),
+            title=_("您并不在游戏中"),
             input_message_content=
-            InputTextMessageContent(_('Not playing right now. Use /new to '
-                                      'start a game or /join to join the '
-                                      'current game in this group'))
+            InputTextMessageContent(_('您并不在游戏中。请使用 /new 创建一个新游戏，或者使用 /join 加入一个现有的游戏'))
         )
     )
 
@@ -87,9 +85,9 @@ def add_not_started(results):
     results.append(
         InlineQueryResultArticle(
             "nogame",
-            title=_("The game wasn't started yet"),
+            title=_("游戏还没有开始"),
             input_message_content=
-            InputTextMessageContent(_('Start the game with /start'))
+            InputTextMessageContent(_('请先使用 /start 开始游戏'))
         )
     )
 
@@ -99,9 +97,9 @@ def add_mode_classic(results):
     results.append(
         InlineQueryResultArticle(
             "mode_classic",
-            title=_("🎻 Classic mode"),
+            title=_("🎻 经典模式"),
             input_message_content=
-            InputTextMessageContent(_('Classic 🎻'))
+            InputTextMessageContent(_('经典 🎻'))
         )
     )
 
@@ -111,9 +109,9 @@ def add_mode_fast(results):
     results.append(
         InlineQueryResultArticle(
             "mode_fast",
-            title=_("🚀 Sanic mode"),
+            title=_("🚀 Sanic 模式"),
             input_message_content=
-            InputTextMessageContent(_('Gotta go fast! 🚀'))
+            InputTextMessageContent(_('搞快点！ 🚀\"'))
         )
     )
 
@@ -123,9 +121,9 @@ def add_mode_wild(results):
     results.append(
         InlineQueryResultArticle(
             "mode_wild",
-            title=_("🐉 Wild mode"),
+            title=_("🐉 野性模式"),
             input_message_content=
-            InputTextMessageContent(_('Into the Wild~ 🐉'))
+            InputTextMessageContent(_('进入旷野~ 🐉'))
         )
     )
 
@@ -150,8 +148,8 @@ def add_draw(player, results):
         Sticker(
             "draw", sticker_file_id=c.STICKERS['option_draw'],
             input_message_content=
-            InputTextMessageContent(__('Drawing {number} card',
-                                       'Drawing {number} cards', n,
+            InputTextMessageContent(__('抽取 {number} 张牌',
+                                       '抽取 {number} 张牌', n,
                                        multi=player.game.translate)
                                     .format(number=n))
         )
@@ -176,7 +174,7 @@ def add_pass(results, game):
         Sticker(
             "pass", sticker_file_id=c.STICKERS['option_pass'],
             input_message_content=InputTextMessageContent(
-                __('Pass', multi=game.translate)
+                __('过牌', multi=game.translate)
             )
         )
     )
@@ -189,7 +187,7 @@ def add_call_bluff(results, game):
             "call_bluff",
             sticker_file_id=c.STICKERS['option_bluff'],
             input_message_content=
-            InputTextMessageContent(__("I'm calling your bluff!",
+            InputTextMessageContent(__("我要质疑你！",
                                        multi=game.translate))
         )
     )
@@ -217,13 +215,13 @@ def add_card(game, card, results, can_play):
 def game_info(game):
     players = player_list(game)
     return InputTextMessageContent(
-        _("Current player: {name}")
+        _("轮到： {name}")
         .format(name=display_name(game.current_player.user)) +
         "\n" +
-        _("Last card: {card}").format(card=repr(game.last_card)) +
+        _("上一张牌： {card}").format(card=repr(game.last_card)) +
         "\n" +
-        _("Player: {player_list}",
-          "Players: {player_list}",
+        _("玩家： {player_list}",
+          "玩家： {player_list}",
           len(players))
         .format(player_list=" -> ".join(players))
     )

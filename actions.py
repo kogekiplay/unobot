@@ -47,13 +47,12 @@ def do_skip(bot, player, job_queue=None):
 
         n = skipped_player.waiting_time
         send_async(bot, chat.id,
-                   text=__("Waiting time to skip this player has "
-                        "been reduced to {time} seconds.\n"
-                        "Next player: {name}", multi=game.translate)
+                   text=__("该玩家的等待时间已降至 {time} 秒。\n"
+                        "轮到： {name}", multi=game.translate)
                    .format(time=n,
                            name=display_name(next_player.user))
         )
-        logger.info("{player} was skipped! "
+        logger.info("{player} 已被跳过！ "
                     .format(player=display_name(player.user)))
         game.turn()
         if job_queue:
@@ -63,21 +62,19 @@ def do_skip(bot, player, job_queue=None):
         try:
             gm.leave_game(skipped_player.user, chat)
             send_async(bot, chat.id,
-                       text=__("{name1} ran out of time "
-                            "and has been removed from the game!\n"
-                            "Next player: {name2}", multi=game.translate)
+                       text=__("{name1} 已经连续4次没有出牌，将其移出了游戏。\n "
+                            "轮到： {name2}", multi=game.translate)
                        .format(name1=display_name(skipped_player.user),
                                name2=display_name(next_player.user)))
-            logger.info("{player} was skipped! "
+            logger.info("{player} 已被跳过！ "
                     .format(player=display_name(player.user)))
             if job_queue:
                 start_player_countdown(bot, game, job_queue)
 
         except NotEnoughPlayersError:
             send_async(bot, chat.id,
-                       text=__("{name} ran out of time "
-                               "and has been removed from the game!\n"
-                               "The game ended.", multi=game.translate)
+                       text=__("{name} 已经被连续跳过了 4 次。\n"
+                               "游戏结束。", multi=game.translate)
                        .format(name=display_name(skipped_player.user)))
 
             gm.end_game(chat, skipped_player.user)
@@ -100,14 +97,14 @@ def do_play_card(bot, player, result_id):
         us.cards_played += 1
 
     if game.choosing_color:
-        send_async(bot, chat.id, text=__("Please choose a color", multi=game.translate))
+        send_async(bot, chat.id, text=__("请选择颜色", multi=game.translate))
 
     if len(player.cards) == 1:
         send_async(bot, chat.id, text="UNO!")
 
     if len(player.cards) == 0:
         send_async(bot, chat.id,
-                   text=__("{name} won!", multi=game.translate)
+                   text=__("{name} 赢了！", multi=game.translate)
                    .format(name=user.first_name))
 
         if us.stats:
@@ -122,7 +119,7 @@ def do_play_card(bot, player, result_id):
             gm.leave_game(user, chat)
         except NotEnoughPlayersError:
             send_async(bot, chat.id,
-                       text=__("Game ended!", multi=game.translate))
+                       text=__("游戏结束！", multi=game.translate))
 
             us2 = UserSetting.get(id=game.current_player.user.id)
             if us2 and us2.stats:
@@ -140,7 +137,7 @@ def do_draw(bot, player):
         player.draw()
     except DeckEmptyError:
         send_async(bot, player.game.chat.id,
-                   text=__("There are no more cards in the deck.",
+                   text=__("牌堆中已经没有更多的牌了。",
                            multi=game.translate))
 
     if (game.last_card.value == c.DRAW_TWO or
@@ -156,7 +153,7 @@ def do_call_bluff(bot, player):
 
     if player.prev.bluffing:
         send_async(bot, chat.id,
-                   text=__("Bluff called! Giving 4 cards to {name}",
+                   text=__("质疑成功！给 {name} 4 张牌",
                            multi=game.translate)
                    .format(name=player.prev.user.first_name))
 
@@ -164,13 +161,13 @@ def do_call_bluff(bot, player):
             player.prev.draw()
         except DeckEmptyError:
             send_async(bot, player.game.chat.id,
-                       text=__("There are no more cards in the deck.",
+                       text=__("牌堆中已经没有更多的牌了。",
                                multi=game.translate))
 
     else:
         game.draw_counter += 2
         send_async(bot, chat.id,
-                   text=__("{name1} didn't bluff! Giving 6 cards to {name2}",
+                   text=__("质疑 {name1} 失败！给 {name2} 6 张牌",
                            multi=game.translate)
                    .format(name1=player.prev.user.first_name,
                            name2=player.user.first_name))
@@ -178,7 +175,7 @@ def do_call_bluff(bot, player):
             player.draw()
         except DeckEmptyError:
             send_async(bot, player.game.chat.id,
-                       text=__("There are no more cards in the deck.",
+                       text=__("牌堆中已经没有更多的牌了。",
                                multi=game.translate))
 
     game.turn()
